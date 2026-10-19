@@ -1,0 +1,5 @@
+# pnpm 10+ 的构建脚本审批：只有显式批准的依赖才会执行 postinstall
+allowBuilds:
+  esbuild: true
+  # 飞书 SDK 的传递依赖，其 postinstall 对本项目无用，明确拒绝以免启动时预检报错
+  protobufjs: false

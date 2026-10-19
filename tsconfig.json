@@ -1,0 +1,45 @@
+{
+  // ==============================================================================
+  // TypeScript 编译器配置文件 (tsconfig.json)
+  // 作用：告诉 TypeScript 编译器 (tsc) 和 tsx 如何解析、检查及转译代码
+  // ==============================================================================
+  "compilerOptions": {
+    // 1. target: 编译生成的目标 JavaScript 语言版本
+    // 使用 ES2022 可以直接支持 async/await、class private fields 等现代特性
+    "target": "ES2022",
+
+    // 2. module: 指定生成哪个模块系统的代码
+    // 使用现代原生 ES 模块标准（import / export 语法）
+    "module": "ES2022",
+
+    // 3. moduleResolution: 模块导入路径的查找策略
+    // "bundler" 模拟现代打包工具（如 Vite / Rollup / tsx）的解析规则，支持 package.json 的 exports 字段
+    "moduleResolution": "bundler",
+
+    // 4. strict: 开启所有严格类型检查选项（关键！）
+    // 强制检查 null/undefined，禁止隐式 any，极大减少 Agent 运行时因字段缺失导致的崩溃
+    "strict": true,
+
+    // 5. esModuleInterop: 兼容旧版 CommonJS 模块的导入
+    // 允许使用 import React from 'react' 代替 import * as React from 'react'
+    "esModuleInterop": true,
+
+    // 6. skipLibCheck: 跳过 node_modules 第三方声明文件 (*.d.ts) 的深度类型检查
+    // 大幅提升编译与类型检查（tsc）的速度，避免被第三方库的类型冲突拖慢
+    "skipLibCheck": true,
+
+    // 7. outDir: 编译生成的 JavaScript 文件存放目录
+    "outDir": "dist",
+
+    // 8. rootDir: 源码根目录，用于控制输出目录结构
+    "rootDir": "src",
+
+    // 显式引入 node 的内置类型定义，消除编辑器对 node:process 和 node:readline 的误报
+    "types": ["node"]
+  },
+
+  // 9. include: 指定需要被 TypeScript 编译器处理的源文件范围
+  "include": [
+    "src"
+  ]
+}

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Super Agent · 预览</title>
+  <!-- 样式由 Agent 生成到 app/styles.css -->
+  <link rel="stylesheet" href="./styles.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.3.1",
+        "react-dom": "https://esm.sh/react-dom@18.3.1",
+        "react-dom/client": "https://esm.sh/react-dom@18.3.1/client"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="module">
+    // ========================================================================
+    // 预置脚手架：让 ./App.tsx 在浏览器里直接跑起来（无 webpack / Vite / build）
+    //
+    // 三层原理：
+    // 1. importmap       浏览器原生能力，把 react 这类裸包名解析到 esm.sh
+    // 2. Babel Standalone 运行时把 TSX 编译成浏览器可执行的 ES module
+    // 3. 下面的 loader    递归编译相对路径 import，把每个模块包成 Blob URL
+    //
+    // 这段是基础设施，每个 vibe coding 项目都一样 —— Agent 不需要重新生成它，
+    // 只写 App.tsx / 组件 / styles.css 即可。
+    // 注意：App.tsx 里要 `import React from 'react'`（Babel 用经典 JSX 运行时）。
+    // ========================================================================
+    const { transform } = await import('https://esm.sh/@babel/standalone@7.25.6');
+    const cache = new Map();
+
+    async function loadModule(url) {
+      if (cache.has(url)) return cache.get(url);
+
+      // CSS 不参与模块图：直接插一个 <link>，模块本身返回空
+      if (url.endsWith('.css')) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = url;
+        document.head.appendChild(link);
+        cache.set(url, 'data:text/javascript,export default {}');
+        return cache.get(url);
+      }
+
+      const src = await (await fetch(url)).text();
+      const compiled = transform(src, {
+        presets: [['react'], ['typescript', { allExtensions: true, isTSX: true }]],
+        filename: url,
+      }).code;
+      const resolved = await rewriteRelativeImports(compiled, url);
+      const blob = new Blob([resolved], { type: 'application/javascript' });
+      const blobUrl = URL.createObjectURL(blob);
+      cache.set(url, blobUrl);
+      return blobUrl;
+    }
+
+    async function rewriteRelativeImports(code, baseUrl) {
+      const importRe = /((?:from|import)\s*\(?\s*)(['"])(\.\.?\/[^'"]+)\2/g;
+      const specs = new Set();
+      for (const m of code.matchAll(importRe)) specs.add(m[3]);
+
+      const resolved = new Map();
+      for (const spec of specs) {
+        resolved.set(spec, await loadModule(new URL(spec, baseUrl).href));
+      }
+      return code.replace(importRe, (full, prefix, quote, spec) =>
+        resolved.has(spec) ? `${prefix}${quote}${resolved.get(spec)}${quote}` : full,
+      );
+    }
+
+    try {
+      await import(await loadModule(new URL('./App.tsx', location.href).href));
+    } catch (err) {
+      document.getElementById('root').innerHTML =
+        '<pre style="padding:24px;font:14px/1.6 monospace;color:#b91c1c;white-space:pre-wrap">' +
+        '应用加载失败：\n' + String((err && err.stack) || err) +
+        '</pre>';
+    }
+  </script>
+</body>
+</html>

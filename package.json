@@ -1,0 +1,35 @@
+{
+  "name": "super-agent",
+  "version": "0.1.0",
+  "description": "生产级 AI Agent 框架：Agent Loop / 工具系统 / 上下文工程 / 记忆与 RAG / 权限 / 定时任务 / 多 Agent 调度，全部从零手写",
+  "type": "module",
+  "bin": {
+    "super-agent": "src/index.ts"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "init": "tsx src/index.ts init",
+    "continue": "tsx src/index.ts --continue",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts",
+    "trace:inspect": "tsx src/trace/inspect.ts"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^4.0.58",
+    "@hono/node-server": "^2.1.1",
+    "@larksuiteoapi/node-sdk": "^1.74.0",
+    "ai": "^7.0.92",
+    "croner": "^10.0.1",
+    "dotenv": "^17.4.2",
+    "hono": "^4.13.8",
+    "turndown": "^7.2.4",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.1",
+    "@types/turndown": "^5.0.6",
+    "tsx": "^4.23.13",
+    "typescript": "^5.8.3"
+  }
+}
